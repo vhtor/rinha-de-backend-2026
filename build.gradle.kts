@@ -22,6 +22,7 @@ dependencies {
     implementation(ktorLibs.serialization.kotlinx.json)
     implementation(libs.logback.classic)
     implementation("io.ktor:ktor-server-content-negotiation:3.5.0")
+    implementation("com.fasterxml.jackson.core:jackson-core:2.17.0")
 
     testImplementation(kotlin("test"))
     testImplementation(ktorLibs.server.testHost)

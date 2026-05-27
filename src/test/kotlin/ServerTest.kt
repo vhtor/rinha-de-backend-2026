@@ -7,13 +7,18 @@ import kotlin.test.*
 
 class ServerTest {
 
+    @BeforeTest
+    fun setup() {
+        System.setProperty("RESOURCES_DIR", "src/test/resources")
+        System.setProperty("EXPECTED_REFERENCE_SIZE", "5")
+    }
+
     @Test
-    fun `test root endpoint`() = testApplication {
+    fun `ready endpoint returns 200 after data is loaded`() = testApplication {
         application {
             rootModule()
         }
-        // verify server root returns 200
-        assertEquals(HttpStatusCode.OK, client.get("/").status)
+        val response = client.get("/ready")
+        assertEquals(HttpStatusCode.OK, response.status)
     }
-
 }

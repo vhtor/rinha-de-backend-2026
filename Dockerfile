@@ -25,6 +25,7 @@ FROM debian:bookworm-slim
 WORKDIR /app
 
 COPY --from=builder /app/build/native/nativeCompile/rinha-backend-2026 .
+COPY resources/ /app/resources
 
 EXPOSE 9999
 

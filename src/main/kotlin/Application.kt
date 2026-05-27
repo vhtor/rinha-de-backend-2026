@@ -1,5 +1,6 @@
 package com.vhtor
 
+import com.vhtor.data.DataLoader
 import com.vhtor.routes.configureHealthRoutes
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
@@ -7,6 +8,12 @@ import io.ktor.server.application.install
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 
 fun Application.rootModule() {
+    val resourcesDir = System.getenv("RESOURCES_DIR")
+        ?: System.getProperty("RESOURCES_DIR")
+        ?: "./resources"
+    val expectedSize = System.getProperty("EXPECTED_REFERENCE_SIZE")?.toIntOrNull() ?: 3_000_000
+    val dataContext = DataLoader.loadAll(resourcesDir, expectedSize)
+
     install(ContentNegotiation) {
         json()
     }
