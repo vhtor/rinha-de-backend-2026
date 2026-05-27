@@ -1,0 +1,41 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# GraalVM Native Image
+*.nativeimage
+*.dump
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Kotlin
+*.class
+*.kotlin_module
+
+# Reference data (large files, never committed)
+references.json.gz
+mcc_risk.json
+normalization.json
+
+# Docker
+docker-compose.override.yml
+
+# Local environment
+.env
+.env.local
+
