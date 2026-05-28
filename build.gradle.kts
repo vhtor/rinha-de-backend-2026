@@ -35,6 +35,7 @@ graalvmNative {
             mainClass.set("com.vhtor.MainKt")
             buildArgs.add("--no-fallback")
             buildArgs.add("-H:+ReportExceptionStackTraces")
+            buildArgs.add("--initialize-at-build-time=kotlin")
         }
     }
 }
