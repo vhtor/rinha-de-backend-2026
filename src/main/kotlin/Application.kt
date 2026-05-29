@@ -2,6 +2,7 @@ package com.vhtor
 
 import com.vhtor.data.DataLoader
 import com.vhtor.fraud.FraudDetector
+import com.vhtor.routes.configureFraudRoutes
 import com.vhtor.routes.configureHealthRoutes
 import com.vhtor.search.VectorIndex
 import io.ktor.serialization.kotlinx.json.json
@@ -29,4 +30,5 @@ fun Application.rootModule() {
     }
 
     configureHealthRoutes()
+    configureFraudRoutes(fraudDetector)
 }
