@@ -2,6 +2,7 @@ package com.vhtor
 
 import com.vhtor.data.DataLoader
 import com.vhtor.routes.configureHealthRoutes
+import com.vhtor.search.VectorIndex
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
@@ -13,6 +14,7 @@ fun Application.rootModule() {
         ?: "./resources"
     val expectedSize = System.getProperty("EXPECTED_REFERENCE_SIZE")?.toIntOrNull() ?: 3_000_000
     val dataContext = DataLoader.loadAll(resourcesDir, expectedSize)
+    val vectorIndex = VectorIndex(dataContext.references)
 
     install(ContentNegotiation) {
         json()
