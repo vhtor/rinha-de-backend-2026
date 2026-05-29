@@ -1,6 +1,7 @@
 package com.vhtor
 
 import com.vhtor.data.DataLoader
+import com.vhtor.fraud.FraudDetector
 import com.vhtor.routes.configureHealthRoutes
 import com.vhtor.search.VectorIndex
 import io.ktor.serialization.kotlinx.json.json
@@ -15,6 +16,13 @@ fun Application.rootModule() {
     val expectedSize = System.getProperty("EXPECTED_REFERENCE_SIZE")?.toIntOrNull() ?: 3_000_000
     val dataContext = DataLoader.loadAll(resourcesDir, expectedSize)
     val vectorIndex = VectorIndex(dataContext.references)
+
+    val fraudDetector = FraudDetector(
+        vectorIndex = vectorIndex,
+        store = dataContext.references,
+        normalization = dataContext.normalization,
+        mccRisk = dataContext.mccRisk
+    )
 
     install(ContentNegotiation) {
         json()
