@@ -3,13 +3,12 @@ package com.vhtor.search
 import com.vhtor.data.ReferenceStore
 
 /**
- * Índice de busca vetorial brute-force sobre o ReferenceStore.
- * Encontra os k vizinhos mais próximos usando distância euclidiana ao quadrado.
+ * Índice de busca vetorial brute-force sobre vetores quantizados (int8).
  *
- * Características da implementação:
- * - Brute-force: O(N) por consulta, mas cache-friendly no flat array
- * - Distância²: sem sqrt, mesma ordenação (sqrt é monotônica)
- * - Bounded queue com insertion sort: para k=5, array ordenado é mais rápido que heap
+ * A distância euclidiana ao quadrado é calculada em aritmética inteira:
+ * - Cada byte [0, 255] representa um float [-1, 1]
+ * - diff = byteA - byteB (range: -255 a 255)
+ * - dist += diff * diff
  */
 class VectorIndex(private val store: ReferenceStore) {
     companion object {
@@ -25,7 +24,8 @@ class VectorIndex(private val store: ReferenceStore) {
      * @return Lista de K Neighbors ordenada por distância crescente
      */
     fun findNearest(query: FloatArray): List<Neighbor> {
-        val topDistances = FloatArray(K) { Float.MAX_VALUE }
+        val quantizedQuery = ReferenceStore.quantizeVector(query)
+        val topDistances = IntArray(K) { Int.MAX_VALUE }
         val topIndices = IntArray(K) { -1 }
 
         val vectors = store.vectors
@@ -35,9 +35,11 @@ class VectorIndex(private val store: ReferenceStore) {
             val baseOffset = i * dimensions
 
             // Calcula distância euclidiana ao quadrado
-            var distanceSquared = 0f
+            var distanceSquared = 0
             for (d in 0 until dimensions) {
-                val diff = query[d] - vectors[baseOffset + d]
+                val referenceValue = vectors[baseOffset + d].toInt() and 0xFF // Conversão para unsigned
+                val queryValue = quantizedQuery[d].toInt() and 0xFF
+                val diff = referenceValue - queryValue
                 distanceSquared += diff * diff
             }
 
@@ -61,9 +63,9 @@ class VectorIndex(private val store: ReferenceStore) {
      * topDistances[K-1] = maior distância (candidato a ser substituído)
      */
     private fun insertSorted(
-        distances: FloatArray,
+        distances: IntArray,
         indices: IntArray,
-        newDistance: Float,
+        newDistance: Int,
         newIndex: Int
     ) {
         // Encontra a posição correta (do final para o início)
@@ -83,9 +85,12 @@ class VectorIndex(private val store: ReferenceStore) {
 
 /**
  * Resultado de uma busca k-NN: o índice do vetor no ReferenceStore
- * e a distância ao quadrado (sem sqrt) até o query vector.
+ * e a distância ao quadrado (em escala inteira) até o query vector.
+ *
+ *  Nota: distanceSquared é proporcional à distância float² (fator: 127.5²)
+ *  mas o valor absoluto não é usado — apenas a ordenação importa.
  */
 data class Neighbor(
     val index: Int,
-    val distanceSquared: Float
+    val distanceSquared: Int
 ) {}

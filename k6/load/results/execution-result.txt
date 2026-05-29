@@ -1,0 +1,58 @@
+
+         /\      Grafana   /‾‾/
+    /\  /  \     |\  __   /  /
+   /  \/    \    | |/ /  /   ‾‾\
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/
+
+
+     execution: local
+        script: k6/load/load.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 50 max VUs, 2m20s max duration (incl. graceful stop):
+              * default: Up to 50 looping VUs for 1m50s over 4 stages (gracefulRampDown: 30s, gracefulStop: 30s)
+
+
+
+  █ THRESHOLDS
+
+    http_req_duration
+    ✗ 'p(95)<500' p(95)=9.19s
+    ✗ 'p(99)<2000' p(99)=12.37s
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+
+  █ TOTAL RESULTS
+
+    checks_total.......: 3130    28.424274/s
+    checks_succeeded...: 100.00% 3130 out of 3130
+    checks_failed......: 0.00%   0 out of 3130
+
+    ✓ status is 200
+    ✓ has transaction_id
+
+    HTTP
+    http_req_duration..............: avg=2.64s min=31.02ms  med=391.74ms max=16.18s p(90)=7.98s p(95)=9.19s
+      { expected_response:true }...: avg=2.64s min=31.02ms  med=391.74ms max=16.18s p(90)=7.98s p(95)=9.19s
+    http_req_failed................: 0.00%  0 out of 1565
+    http_reqs......................: 1565   14.212137/s
+
+    EXECUTION
+    iteration_duration.............: avg=2.74s min=131.14ms med=492.07ms max=16.28s p(90)=8.08s p(95)=9.29s
+    iterations.....................: 1565   14.212137/s
+    vus............................: 1      min=1         max=50
+    vus_max........................: 50     min=50        max=50
+
+    NETWORK
+    data_received..................: 372 kB 3.4 kB/s
+    data_sent......................: 929 kB 8.4 kB/s
+
+
+
+
+running (1m50.1s), 00/50 VUs, 1565 complete and 0 interrupted iterations
+default ✓ [======================================] 00/50 VUs  1m50s
+ERRO[0110] thresholds on metrics 'http_req_duration' have been crossed

@@ -12,7 +12,7 @@ object ReferenceLoader {
     private const val GZIP_BUFFER_SIZE = 65536
 
     fun load(path: String, expectedSize: Int = DEFAULT_EXPECTED_SIZE): ReferenceStore {
-        val vectors = FloatArray(expectedSize * DIMENSIONS)
+        val vectors = ByteArray(expectedSize * DIMENSIONS)
         val labels = BooleanArray(expectedSize)
 
         var count = 0
@@ -34,7 +34,7 @@ object ReferenceLoader {
 
     private fun readEntry(
         parser: JsonParser,
-        vectors: FloatArray,
+        vectors: ByteArray,
         labels: BooleanArray,
         index: Int
     ) {
@@ -49,7 +49,7 @@ object ReferenceLoader {
                     var dimension = 0
 
                     while (parser.nextToken() != JsonToken.END_ARRAY) {
-                        vectors[baseOffset + dimension] = parser.floatValue
+                        vectors[baseOffset + dimension] = ReferenceStore.quantize(parser.floatValue)
                         dimension++
                     }
                 }

@@ -3,7 +3,12 @@ package com.vhtor.fraud
 import com.vhtor.data.MccRiskMap
 import com.vhtor.data.NormalizationConfig
 import com.vhtor.data.ReferenceStore
-import com.vhtor.models.*
+import com.vhtor.models.Customer
+import com.vhtor.models.FraudRequest
+import com.vhtor.models.LastTransaction
+import com.vhtor.models.Merchant
+import com.vhtor.models.Terminal
+import com.vhtor.models.Transaction
 import com.vhtor.search.VectorIndex
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -35,13 +40,14 @@ class FraudDetectorTest {
         val dim = 14
         val numVectors = 10
 
-        val vectors = FloatArray(numVectors * dim)
+        val vectors = ByteArray(numVectors * dim)
         val labels = BooleanArray(numVectors)
 
         // Primeiros 5: fraude (valores altos ~0.9)
         for (i in 0 until 5) {
             for (d in 0 until dim) {
-                vectors[i * dim + d] = 0.85f + (i * 0.02f) // 0.85, 0.87, 0.89, 0.91, 0.93
+                val floatVal = 0.85f + (i * 0.02f)
+                vectors[i * dim + d] = ReferenceStore.quantize(floatVal)
             }
             labels[i] = true
         }
@@ -49,7 +55,8 @@ class FraudDetectorTest {
         // Últimos 5: legit (valores baixos ~0.1)
         for (i in 5 until 10) {
             for (d in 0 until dim) {
-                vectors[i * dim + d] = 0.05f + ((i - 5) * 0.02f) // 0.05, 0.07, 0.09, 0.11, 0.13
+                val floatVal = 0.05f + ((i - 5) * 0.02f)
+                vectors[i * dim + d] = ReferenceStore.quantize(floatVal)
             }
             labels[i] = false
         }
@@ -158,7 +165,7 @@ class FraudDetectorTest {
         // 8 vetores no total:
         // - 5 vetores "perto" (todos iguais) -> serão os top-5
         // - 3 vetores "longe" -> nunca entram no top-5
-        val vectors = FloatArray(8 * dim)
+        val floatVectors = FloatArray(8 * dim)
         val labels = BooleanArray(8)
 
         // Top-5 controlado: 3 fraudes e 2 legítimos => 3/5 = 0.6
@@ -167,7 +174,7 @@ class FraudDetectorTest {
         // Vetores próximos (indices 0..4) todos em 0.5
         for (i in 0 until 5) {
             for (d in 0 until dim) {
-                vectors[i * dim + d] = 0.5f
+                floatVectors[i * dim + d] = 0.5f
             }
             labels[i] = top5Labels[i]
         }
@@ -175,11 +182,12 @@ class FraudDetectorTest {
         // Outliers bem distantes (indices 5..7), labels não importam
         for (i in 5 until 8) {
             for (d in 0 until dim) {
-                vectors[i * dim + d] = 1.0f
+                floatVectors[i * dim + d] = 1.0f
             }
             labels[i] = false
         }
 
+        val vectors = ReferenceStore.quantizeVector(floatVectors)
         val store = ReferenceStore(vectors, labels, 8, dim)
         val detector = createDetector(store)
 
@@ -209,16 +217,17 @@ class FraudDetectorTest {
 
         // Criamos um cenário onde exatamente 3 de 5 vizinhos são fraude
         val dim = 14
-        val vectors = FloatArray(5 * dim)
+        val floatVectors = FloatArray(5 * dim)
         val labels = booleanArrayOf(true, true, true, false, false)
 
         // Todos no mesmo ponto (distância ~0 entre eles)
         for (i in 0 until 5) {
             for (d in 0 until dim) {
-                vectors[i * dim + d] = 0.5f
+                floatVectors[i * dim + d] = 0.5f
             }
         }
 
+        val vectors = ReferenceStore.quantizeVector(floatVectors)
         val store = ReferenceStore(vectors, labels, 5, dim)
         val detector = createDetector(store)
 
@@ -241,15 +250,16 @@ class FraudDetectorTest {
     @Test
     fun `all neighbors legit gives score zero and approved`() {
         val dim = 14
-        val vectors = FloatArray(5 * dim)
+        val floatVectors = FloatArray(5 * dim)
         val labels = booleanArrayOf(false, false, false, false, false) // all legit
 
         for (i in 0 until 5) {
             for (d in 0 until dim) {
-                vectors[i * dim + d] = 0.5f
+                floatVectors[i * dim + d] = 0.5f
             }
         }
 
+        val vectors = ReferenceStore.quantizeVector(floatVectors)
         val store = ReferenceStore(vectors, labels, 5, dim)
         val detector = createDetector(store)
 

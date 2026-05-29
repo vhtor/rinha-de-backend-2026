@@ -35,7 +35,8 @@ graalvmNative {
             mainClass.set("com.vhtor.MainKt")
             buildArgs.add("--no-fallback")
             buildArgs.add("-H:+ReportExceptionStackTraces")
-            buildArgs.add("--initialize-at-build-time=kotlin")
+            buildArgs.add("--initialize-at-build-time=kotlin,kotlinx.serialization,com.vhtor,ch.qos.logback,org.slf4j")
+            buildArgs.add("-R:MaxHeapSize=150m")
         }
     }
 }
